@@ -5,12 +5,6 @@ const streetTile = 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
 const streetAttr = '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors';
 let streetLayer = L.tileLayer(streetTile, {attribution: streetAttr});
 
-// OPTIONAL: Step 2
-// Create the 'street' tile layer as a second background of the map
-const topoTile = 'https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png';
-const topoAttr = 'Map data: &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, <a href="http://viewfinderpanoramas.org">SRTM</a> | Map style: &copy; <a href="https://opentopomap.org">OpenTopoMap</a> (<a href="https://creativecommons.org/licenses/by-sa/3.0/">CC-BY-SA</a>)';
-let topoLayer = L.tileLayer(topoTile, {attribution: topoAttr});
-
 // Create the map object with center and zoom options.
 let myMap = L.map('map', {
     center: [37.09, -95.71],
@@ -20,24 +14,6 @@ let myMap = L.map('map', {
 
 // Then add the 'basemap' tile layer to the map.
 streetLayer.addTo(myMap);
-
-// OPTIONAL: Step 2
-// Create the layer groups, base maps, and overlays for our two sets of data, earthquakes and tectonic_plates.
-// Add a control to the map that will allow the user to change which layers are visible.
-let baseMaps = {
-  'Street': streetLayer,
-  'Topography': topoLayer
-};
-
-let earthquakes = new L.LayerGroup();
-let tectonic_plates = new L.LayerGroup();
-let overlayMaps = {
-  'Earthquakes': earthquakes,
-  'Tectonic Plates': tectonic_plates
-};
-
-L.control.layers(baseMaps, overlayMaps).addTo(myMap);
-
 
 // Make a request that retrieves the earthquake geoJSON data.
 const earthquake_API = 'https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_week.geojson';
@@ -96,15 +72,4 @@ d3.json(earthquake_API).then(data => {
 
   // Finally, add the legend to the map.
 
-
-  // OPTIONAL: Step 2
-  // Make a request to get our Tectonic Plate geoJSON data.
-  const tectonicPlates_API = 'https://raw.githubusercontent.com/fraxen/tectonicplates/master/GeoJSON/PB2002_boundaries.json';
-  d3.json(tectonicPlates_API).then(plate_data => {
-    // Save the geoJSON data, along with style information, to the tectonic_plates layer.
-
-
-    // Then add the tectonic_plates layer to the map.
-
-  });
 });
