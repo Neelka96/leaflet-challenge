@@ -59,16 +59,19 @@ d3.json(earthquake_API).then(data => {
 
   // Round extremes to nearest 10th using 
   let depth_extremes = d3.extent(data.features, feat => feat.geometry.coordinates[2]);
-  let min = rounder(depth_extremes[0], Math.floor, 1);
-  let max = rounder(depth_extremes[1], Math.ceil, 1);
-  max = 90;
+  let min = rounder(depth_extremes[0], Math.ceil, 1);
+  let max;
+  if (max < 200)
+    max = rounder(depth_extremes[1], Math.floor, 1);
+  else
+    max = 120;
   
   // Round step length too and create domain for scale threshold
-  const steps = 6;
-  let length = rounder((max - min) / steps, Math.round, 1);
+  const steps = 5;
+  let length = rounder((max - min) / steps, Math.ceil, 1);
   let scale = [];
   let lastNum = min;
-  for (let i = 0; i < steps + 1; i++) {
+  for (let i = 0; i < steps; i++) {
     scale.push(lastNum);
     lastNum += length;
   };
@@ -88,7 +91,7 @@ d3.json(earthquake_API).then(data => {
 
   // This function determines the radius of the earthquake marker based on its magnitude.
   function getRadius(magnitude) {
-    return magnitude ** (2 + (2 / 3));
+    return magnitude ** 2.5;
   };
 
   // This function returns the style data for each of the earthquakes we plot on
@@ -103,7 +106,7 @@ d3.json(earthquake_API).then(data => {
     }
   };
 
-  // Add a GeoJSON layer to the map once the file is loaded.
+  // Add a GeoJSON layer to the earthquake layer once the file is loaded.
   L.geoJson(data, {
 
     // Turn each feature into a circleMarker on the map.
@@ -125,37 +128,54 @@ d3.json(earthquake_API).then(data => {
     }
   // OPTIONAL: Step 2
   // Add the data to the earthquake layer instead of directly to the map.
-  }).addTo(myMap);
+  }).addTo(overlayMaps['Earthquakes']);
 
-  // // Create a legend control object.
-  // let legend = L.control({
-  //   position: 'bottomright'
-  // });
+  // Create a legend control object.
+  let legend = L.control({
+    position: 'bottomright'
+  });
 
-  // // Then add all the details for the legend
-  // legend.onAdd = function () {
-  //   let div = L.DomUtil.create('div', 'info legend');
+  // Then add all the details for the legend
+  legend.onAdd = () => {
+    let div = L.DomUtil.create('div', 'info legend');
 
-  //   // Initialize depth intervals and colors for the legend
+    // Loop through our depth intervals to generate a label with a colored square for each interval.
+    div.innerHTML += `<i style="background: ${colors[0]}"></i>: < ${scale[0]}<br>`
+    for (let i = 0; i < scale.length - 1; i++) {
+      let depth = scale[i];
+      let color = colors[i+1];
+      div.innerHTML += `<i style="background: ${color}"></i>: ${depth}-${scale[i+1]}<br>`;
+    };
+    div.innerHTML += `<i style="background: ${colors.at(-1)}"></i>: > ${scale.at(-1)}`;
 
+    return div;
+  };
 
-  //   // Loop through our depth intervals to generate a label with a colored square for each interval.
-
-
-  //   return div;
-  // };
-
-  // // Finally, add the legend to the map.
-
-
-  // // OPTIONAL: Step 2
-  // // Make a request to get our Tectonic Plate geoJSON data.
-  // const tectonicPlates_API = 'https://raw.githubusercontent.com/fraxen/tectonicplates/master/GeoJSON/PB2002_boundaries.json';
-  // d3.json(tectonicPlates_API).then(plate_data => {
-  //   // Save the geoJSON data, along with style information, to the tectonic_plates layer.
+  // Finally, add the legend to the map.
+  legend.addTo(myMap);
 
 
-  //   // Then add the tectonic_plates layer to the map.
+  // OPTIONAL: Step 2
+  // Make a request to get our Tectonic Plate geoJSON data.
+  const tectonicPlates_API = 'https://raw.githubusercontent.com/fraxen/tectonicplates/master/GeoJSON/PB2002_boundaries.json';
+  d3.json(tectonicPlates_API).then(plate_data => {
+    // Save the geoJSON data, along with style information, to the tectonic_plates layer.
+    let plate_geoJson = L.geoJson(plate_data, {
+      style: feature => {
+        return {
+          color: 'blue',
+          fillColor: 'blue',
+          fillOpacity: 0.5,
+          weight: 2
+        };
+      },
+      onEachFeature: (feature, layer) => {
+        if (feature.properties && feature.properties.Name)
+          return layer.bindPopup(`<h3>${feature.properties.Name}</h3>`);
+      }
+    });
 
-  // });
+    // Then add the tectonic_plates layer to the map.
+    plate_geoJson.addTo(overlayMaps['Tectonic Plates']);
+  });
 });
