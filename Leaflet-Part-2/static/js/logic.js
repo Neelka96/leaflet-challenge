@@ -35,8 +35,10 @@ let overlayMaps = {
   'Earthquakes': earthquakes,
   'Tectonic Plates': tectonic_plates
 };
-
 L.control.layers(baseMaps, overlayMaps).addTo(myMap);
+
+// Default Visibility on Earthquake overlay
+earthquakes.addTo(myMap);
 
 
 // Make a request that retrieves the earthquake geoJSON data.
@@ -140,13 +142,14 @@ d3.json(earthquake_API).then(data => {
     let div = L.DomUtil.create('div', 'info legend');
 
     // Loop through our depth intervals to generate a label with a colored square for each interval.
-    div.innerHTML += `<i style="background: ${colors[0]}"></i>: < ${scale[0]}<br>`
+    div.innerHTML += 'Depth Legend<br>';
+    div.innerHTML += `<i style="background: ${colors[0]}"></i> < ${scale[0]}<br>`;
     for (let i = 0; i < scale.length - 1; i++) {
       let depth = scale[i];
       let color = colors[i+1];
-      div.innerHTML += `<i style="background: ${color}"></i>: ${depth}-${scale[i+1]}<br>`;
+      div.innerHTML += `<i style="background: ${color}"></i> ${depth}-${scale[i+1]}<br>`;
     };
-    div.innerHTML += `<i style="background: ${colors.at(-1)}"></i>: > ${scale.at(-1)}`;
+    div.innerHTML += `<i style="background: ${colors.at(-1)}"></i> > ${scale.at(-1)}`;
 
     return div;
   };
@@ -161,12 +164,11 @@ d3.json(earthquake_API).then(data => {
   d3.json(tectonicPlates_API).then(plate_data => {
     // Save the geoJSON data, along with style information, to the tectonic_plates layer.
     let plate_geoJson = L.geoJson(plate_data, {
-      style: feature => {
+      style: () => {
         return {
           color: 'blue',
-          fillColor: 'blue',
           fillOpacity: 0.5,
-          weight: 2
+          weight: 4
         };
       },
       onEachFeature: (feature, layer) => {
