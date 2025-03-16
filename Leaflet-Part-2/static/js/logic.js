@@ -162,6 +162,7 @@ d3.json(earthquake_API).then(data => {
   // Make a request to get our Tectonic Plate geoJSON data.
   const tectonicPlates_API = 'https://raw.githubusercontent.com/fraxen/tectonicplates/master/GeoJSON/PB2002_boundaries.json';
   d3.json(tectonicPlates_API).then(plate_data => {
+    
     // Save the geoJSON data, along with style information, to the tectonic_plates layer.
     let plate_geoJson = L.geoJson(plate_data, {
       style: () => {
