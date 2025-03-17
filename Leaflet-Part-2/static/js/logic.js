@@ -57,6 +57,7 @@ earthquakes.addTo(myMap);
 const earthquake_API = 'https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_week.geojson';
 d3.json(earthquake_API).then(data => {
 
+  // Function to automate rounding based on rounding function and digit placeholder #
   function rounder(value, trans_func, digits) {
     let tens = 0;
     if (digits >= 0) {
@@ -180,10 +181,6 @@ d3.json(earthquake_API).then(data => {
   // Make a request to get our Tectonic Plate geoJSON data.
   const tectonicPlates_API = 'https://raw.githubusercontent.com/fraxen/tectonicplates/master/GeoJSON/PB2002_boundaries.json';
   d3.json(tectonicPlates_API).then(plate_data => {
-    // function popupEvent(feature, layer) {
-      // if (feature.properties && feature.properties.Name)
-      //   return layer.bindPopup(`<h3>${feature.properties.Name}</h3>`);
-    // };
     
     // Save the geoJSON data, along with style information, to the tectonic_plates layer.
     let plate_geoJson = L.geoJson(plate_data, {

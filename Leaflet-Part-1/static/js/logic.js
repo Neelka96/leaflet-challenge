@@ -23,6 +23,7 @@ streetLayer.addTo(myMap);
 const earthquake_API = 'https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_week.geojson';
 d3.json(earthquake_API).then(data => {
 
+  // Function to automate rounding based on rounding function and digit placeholder #
   function rounder(value, trans_func, digits) {
     let tens = 0;
     if (digits >= 0) {
@@ -71,7 +72,7 @@ d3.json(earthquake_API).then(data => {
 
   // This function determines the radius of the earthquake marker based on its magnitude.
   function getRadius(magnitude) {
-    let mag = magnitude ** 2.4;
+    let mag = magnitude ** 2.5;
     let min = 3;
     let max = 75;
     if (mag < min) mag = min
