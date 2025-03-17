@@ -6,7 +6,14 @@ const streetAttr = '&copy; <a href="https://www.openstreetmap.org/copyright">Ope
 let streetLayer = L.tileLayer(streetTile, {attribution: streetAttr});
 
 // OPTIONAL: Step 2
-// Create the 'street' tile layer as a second background of the map
+// Create additional tile layers for backgrounds of the map
+
+// Satellite Tile Layer
+const satTile = 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}';
+const satAttr = 'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USGS, AFRGC, Geoscience Australia, METI, GPF';
+let satLayer = L.tileLayer(satTile, {attribution: satAttr});
+
+// Topography Tile Layer
 const topoTile = 'https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png';
 const topoAttr = 'Map data: &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, <a href="http://viewfinderpanoramas.org">SRTM</a> | Map style: &copy; <a href="https://opentopomap.org">OpenTopoMap</a> (<a href="https://creativecommons.org/licenses/by-sa/3.0/">CC-BY-SA</a>)';
 let topoLayer = L.tileLayer(topoTile, {attribution: topoAttr});
@@ -30,6 +37,7 @@ streetLayer.addTo(myMap);
 // Add a control to the map that will allow the user to change which layers are visible.
 let baseMaps = {
   'Street': streetLayer,
+  'Satellite': satLayer,
   'Topography': topoLayer
 };
 
@@ -97,7 +105,7 @@ d3.json(earthquake_API).then(data => {
 
   // This function determines the radius of the earthquake marker based on its magnitude.
   function getRadius(magnitude) {
-    let mag = magnitude ** 2.4;
+    let mag = magnitude ** 2.5;
     let min = 3;
     let max = 75;
     if (mag < min) mag = min
@@ -181,7 +189,7 @@ d3.json(earthquake_API).then(data => {
     let plate_geoJson = L.geoJson(plate_data, {
       style: () => {
         return {
-          color: 'blue',
+          color: 'violet',
           weight: 3.5
         };
       }
