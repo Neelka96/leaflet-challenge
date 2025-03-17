@@ -8,7 +8,11 @@ let streetLayer = L.tileLayer(streetTile, {attribution: streetAttr});
 // Create the map object with center and zoom options.
 let myMap = L.map('map', {
     center: [37.09, -95.71],
-    zoom: 5
+    zoom: 5,
+    maxBounds: [
+      [-170, -260],
+      [170, 260]
+    ]
   }
 );
 
@@ -35,16 +39,19 @@ d3.json(earthquake_API).then(data => {
 
   // Round extremes to nearest 10th using 
   let depth_extremes = d3.extent(data.features, feat => feat.geometry.coordinates[2]);
-  let min = rounder(depth_extremes[0], Math.floor, 1);
-  let max = rounder(depth_extremes[1], Math.ceil, 1);
-  max = 90;
+  let min = rounder(depth_extremes[0], Math.ceil, 1);
+  let max;
+  if (max < 200)
+    max = rounder(depth_extremes[1], Math.floor, 1);
+  else
+    max = 120;
   
   // Round step length too and create domain for scale threshold
-  const steps = 6;
-  let length = rounder((max - min) / steps, Math.round, 1);
+  const steps = 5;
+  let length = rounder((max - min) / steps, Math.ceil, 1);
   let scale = [];
   let lastNum = min;
-  for (let i = 0; i < steps + 1; i++) {
+  for (let i = 0; i < steps; i++) {
     scale.push(lastNum);
     lastNum += length;
   };
@@ -64,7 +71,12 @@ d3.json(earthquake_API).then(data => {
 
   // This function determines the radius of the earthquake marker based on its magnitude.
   function getRadius(magnitude) {
-    return magnitude ** (2 + (2 / 3));
+    let mag = magnitude ** 2.4;
+    let min = 3;
+    let max = 75;
+    if (mag < min) mag = min
+    else if (mag > max) mag = max
+    return mag;
   };
 
   // This function returns the style data for each of the earthquakes we plot on
@@ -79,7 +91,7 @@ d3.json(earthquake_API).then(data => {
     }
   };
 
-  // Add a GeoJSON layer to the map once the file is loaded.
+  // Add a GeoJSON layer to the earthquake layer once the file is loaded.
   L.geoJson(data, {
 
     // Turn each feature into a circleMarker on the map.
@@ -92,33 +104,38 @@ d3.json(earthquake_API).then(data => {
 
     // Create a popup for each marker to display the magnitude and location of the earthquake after the marker has been created and styled
     onEachFeature: (feature, layer) => {
+      let mag = feature.properties.mag;
       let coords = feature.geometry.coordinates;
       return layer.bindPopup(
-        `<h3>Magnitude: ${feature.properties.mag}</h3>
+        `<h3>Magnitude: ${rounder(mag, Math.round, -3)}</h3>
         <h3>Depth: ${rounder(coords[2], Math.round, -3)} km</h3>
         <h3>Coords: ${rounder(coords[1], Math.round, -3)}, ${rounder(coords[0], Math.round, -3)}</h3>`
       );
     }
   }).addTo(myMap);
 
-  // // Create a legend control object.
-  // let legend = L.control({
-  //   position: 'bottomright'
-  // });
+  // Create a legend control object.
+  let legend = L.control({
+    position: 'bottomright'
+  });
 
-  // // Then add all the details for the legend
-  // legend.onAdd = function () {
-  //   let div = L.DomUtil.create('div', 'info legend');
+  // Then add all the details for the legend
+  legend.onAdd = () => {
+    let div = L.DomUtil.create('div', 'info legend');
 
-  //   // Initialize depth intervals and colors for the legend
+    // Loop through our depth intervals to generate a label with a colored square for each interval.
+    div.innerHTML += 'Depth Legend<br>';
+    div.innerHTML += `<i style="background: ${colors[0]}"></i> < ${scale[0]}<br>`;
+    for (let i = 0; i < scale.length - 1; i++) {
+      let depth = scale[i];
+      let color = colors[i+1];
+      div.innerHTML += `<i style="background: ${color}"></i> ${depth}-${scale[i+1]}<br>`;
+    };
+    div.innerHTML += `<i style="background: ${colors.at(-1)}"></i> > ${scale.at(-1)}`;
 
+    return div;
+  };
 
-  //   // Loop through our depth intervals to generate a label with a colored square for each interval.
-
-
-  //   return div;
-  // };
-
-  // // Finally, add the legend to the map.
-  
+  // Finally, add the legend to the map.
+  legend.addTo(myMap);
 });

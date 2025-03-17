@@ -97,7 +97,12 @@ d3.json(earthquake_API).then(data => {
 
   // This function determines the radius of the earthquake marker based on its magnitude.
   function getRadius(magnitude) {
-    return magnitude ** 2.5;
+    let mag = magnitude ** 2.4;
+    let min = 3;
+    let max = 75;
+    if (mag < min) mag = min
+    else if (mag > max) mag = max
+    return mag;
   };
 
   // This function returns the style data for each of the earthquakes we plot on
@@ -125,9 +130,10 @@ d3.json(earthquake_API).then(data => {
 
     // Create a popup for each marker to display the magnitude and location of the earthquake after the marker has been created and styled
     onEachFeature: (feature, layer) => {
+      let mag = feature.properties.mag;
       let coords = feature.geometry.coordinates;
       return layer.bindPopup(
-        `<h3>Magnitude: ${feature.properties.mag}</h3>
+        `<h3>Magnitude: ${rounder(mag, Math.round, -3)}</h3>
         <h3>Depth: ${rounder(coords[2], Math.round, -3)} km</h3>
         <h3>Coords: ${rounder(coords[1], Math.round, -3)}, ${rounder(coords[0], Math.round, -3)}</h3>`
       );
