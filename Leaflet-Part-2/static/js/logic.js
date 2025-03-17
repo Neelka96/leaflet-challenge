@@ -14,7 +14,11 @@ let topoLayer = L.tileLayer(topoTile, {attribution: topoAttr});
 // Create the map object with center and zoom options.
 let myMap = L.map('map', {
     center: [37.09, -95.71],
-    zoom: 5
+    zoom: 5,
+    maxBounds: [
+      [-170, -260],
+      [170, 260]
+    ]
   }
 );
 
@@ -162,14 +166,26 @@ d3.json(earthquake_API).then(data => {
   // Make a request to get our Tectonic Plate geoJSON data.
   const tectonicPlates_API = 'https://raw.githubusercontent.com/fraxen/tectonicplates/master/GeoJSON/PB2002_boundaries.json';
   d3.json(tectonicPlates_API).then(plate_data => {
+    // function popupEvent(feature, layer) {
+      // if (feature.properties && feature.properties.Name)
+      //   return layer.bindPopup(`<h3>${feature.properties.Name}</h3>`);
+    // };
     
     // Save the geoJSON data, along with style information, to the tectonic_plates layer.
     let plate_geoJson = L.geoJson(plate_data, {
       style: () => {
         return {
           color: 'blue',
-          fillOpacity: 0.5,
-          weight: 4
+          weight: 3.5
+        };
+      }
+    });
+    let plate_interaction = L.geoJson(plate_data, {
+      style: () => {
+        return {
+          color: 'transparent',
+          weight: 30,
+          opacity: 0
         };
       },
       onEachFeature: (feature, layer) => {
@@ -180,5 +196,6 @@ d3.json(earthquake_API).then(data => {
 
     // Then add the tectonic_plates layer to the map.
     plate_geoJson.addTo(overlayMaps['Tectonic Plates']);
+    plate_interaction.addTo(overlayMaps['Tectonic Plates']);
   });
 });
